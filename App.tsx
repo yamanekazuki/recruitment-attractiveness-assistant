@@ -1,13 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import { useAuth } from './src/contexts/AuthContext';
 import LoginPage from './src/components/LoginPage';
-import { FactInputForm } from './src/components/FactInputForm';
-import { AttractivenessDisplay } from './src/components/AttractivenessDisplay';
-import { LoadingSpinner } from './src/components/LoadingSpinner';
-import { ErrorMessage } from './src/components/ErrorMessage';
+import { FactInputForm } from './components/FactInputForm';
+import { AttractivenessDisplay } from './components/AttractivenessDisplay';
+import { LoadingSpinner } from './components/LoadingSpinner';
+import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
-import { InfoIcon, ZapIcon, LogOutIcon } from './src/components/Icons';
+import { InfoIcon, ZapIcon, LogOutIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const { currentUser, logout } = useAuth();
