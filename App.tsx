@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { useAuth } from './contexts/AuthContext';
-import LoginPage from './components/LoginPage';
+import { useAuth } from './src/contexts/AuthContext';
+import LoginPage from './src/components/LoginPage';
 import { FactInputForm } from './components/FactInputForm';
 import { AttractivenessDisplay } from './components/AttractivenessDisplay';
 import { LoadingSpinner } from './components/LoadingSpinner';
