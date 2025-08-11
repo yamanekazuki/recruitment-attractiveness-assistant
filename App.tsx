@@ -1,14 +1,16 @@
 import React, { useState, useCallback } from 'react';
+import { useAuth } from './contexts/AuthContext';
+import LoginPage from './components/LoginPage';
 import { FactInputForm } from './components/FactInputForm';
 import { AttractivenessDisplay } from './components/AttractivenessDisplay';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
-import { InfoIcon, ZapIcon } from './components/Icons';
-
+import { InfoIcon, ZapIcon, LogOutIcon } from './components/Icons';
 
 const App: React.FC = () => {
+  const { currentUser, logout } = useAuth();
   const [attractiveness, setAttractiveness] = useState<AttractivenessOutput | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,8 +20,8 @@ const App: React.FC = () => {
     setError(null);
     setAttractiveness(null);
     try {
-      if (!process.env.API_KEY) {
-        throw new Error("APIキーが設定されていません。環境変数 API_KEY を設定してください。");
+      if (!process.env.GEMINI_API_KEY) {
+        throw new Error("APIキーが設定されていません。環境変数 GEMINI_API_KEY を設定してください。");
       }
       const result = await generateAttractivenessPoints(fact);
       setAttractiveness(result);
@@ -35,9 +37,40 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setAttractiveness(null);
+      setError(null);
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
+  };
+
+  // 認証されていない場合はログイン画面を表示
+  if (!currentUser) {
+    return <LoginPage />;
+  }
+
   return (
     <div className="container mx-auto p-4 md:p-8 min-h-screen flex flex-col">
-      <header className="mb-8 text-center">
+      <header className="mb-8 text-center relative">
+        {/* ログアウトボタン */}
+        <div className="absolute top-0 right-0">
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <LogOutIcon className="w-4 h-4 mr-2" />
+            ログアウト
+          </button>
+        </div>
+
+        {/* ユーザー情報 */}
+        <div className="mb-4 text-sm text-gray-600">
+          ようこそ、<span className="font-medium">{currentUser.email}</span>さん
+        </div>
+
         <div className="inline-flex items-center bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
           <ZapIcon className="w-10 h-10 md:w-12 md:h-12 mr-3" />
           <h1 className="text-3xl md:text-5xl font-bold">
