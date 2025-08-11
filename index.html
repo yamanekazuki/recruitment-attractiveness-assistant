@@ -2,7 +2,12 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#8B5CF6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="採用魅力発見アシスタント">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>採用魅力発見アシスタント</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +16,10 @@
   <style>
     body {
       font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
     }
     /* Custom scrollbar for webkit browsers - Light Theme */
     ::-webkit-scrollbar {
@@ -27,6 +36,13 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #64748b; /* Tailwind gray-500 */
+    }
+    
+    /* モバイル最適化 */
+    @media (max-width: 768px) {
+      body {
+        font-size: 16px; /* iOSでのズーム防止 */
+      }
     }
   </style>
 <script type="importmap">
