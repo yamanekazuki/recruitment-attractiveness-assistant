@@ -81,11 +81,11 @@ Focus on transforming the input {FACT} into these structured, compelling points.
 
 
 export const generateAttractivenessPoints = async (fact: string): Promise<AttractivenessOutput> => {
-  if (!process.env.VITE_API_KEY) {
+  if (!process.env.GEMINI_API_KEY) {
     throw new Error("APIキーが設定されていません。");
   }
 
-  const ai = new GoogleGenAI({ apiKey: "AIzaSyBLnmvL95UdyWwW2jG5twf0RVkEarXZCss"});
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const prompt = buildPrompt(fact);
 
   const attractivenessSchema = {
