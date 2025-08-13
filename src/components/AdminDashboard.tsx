@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon } from '../../components/Icons';
+import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon } from '../../components/Icons';
 import { auditLogPresets, getAuditLogs, getAuditStats, checkSecurityAlerts, exportAuditLogs } from '../services/auditService';
 import type { AuditLog, AuditLogFilter, AuditStats } from '../types/audit';
 
@@ -125,6 +125,13 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  // ユーザー画面に移動する関数
+  const handleSwitchToUserMode = () => {
+    // 管理画面からユーザー画面に切り替える
+    // この関数は親コンポーネント（App.tsx）で処理される
+    window.location.reload(); // 一時的な解決策としてページをリロード
+  };
+
   // 監査ログのエクスポート
   const handleExportAuditLogs = async (format: 'csv' | 'json') => {
     try {
@@ -167,13 +174,22 @@ const AdminDashboard: React.FC = () => {
                 採用魅力発見アシスタント - 管理画面
               </h1>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <LogOutIcon className="w-4 h-4 mr-2" />
-              ログアウト
-            </button>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleSwitchToUserMode}
+                className="flex items-center px-4 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
+              >
+                <UserIcon className="w-4 h-4 mr-2" />
+                ユーザー画面に移動
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <LogOutIcon className="w-4 h-4 mr-2" />
+                ログアウト
+              </button>
+            </div>
           </div>
         </div>
       </header>

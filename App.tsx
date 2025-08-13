@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings' | 'analytics'>('main');
   const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
+  const [isAdminMode, setIsAdminMode] = useState(false); // 管理者モードの状態を追加
 
   // テーマ設定の初期化
   useEffect(() => {
@@ -35,6 +36,16 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
+  // yamane@potentialight.comでログインした場合の初期設定
+  useEffect(() => {
+    if (currentUser && currentUser.email === 'yamane@potentialight.com') {
+      // 管理者としてログインしている場合は管理者モードを有効にする
+      if (isAdmin) {
+        setIsAdminMode(true);
+      }
+    }
+  }, [currentUser, isAdmin]);
+
   const handleLogout = useCallback(async () => {
     try {
       if (isAdmin) {
@@ -45,10 +56,17 @@ const App: React.FC = () => {
       setActiveView('main');
       setAttractiveness(null);
       setError(null);
+      setIsAdminMode(false); // ログアウト時に管理者モードをリセット
     } catch (error) {
       console.error('ログアウトエラー:', error);
     }
   }, [isAdmin, adminLogout, logout]);
+
+  // 管理者モードとユーザーモードの切り替え
+  const handleToggleMode = useCallback(() => {
+    setIsAdminMode(!isAdminMode);
+    setActiveView('main'); // ユーザーモードに切り替える際はメイン画面に戻る
+  }, [isAdminMode]);
 
   const handleSubmit = useCallback(async (fact: string) => {
     if (!fact.trim()) {
@@ -105,9 +123,10 @@ const App: React.FC = () => {
       activeView,
       isLoading,
       error,
-      attractiveness: !!attractiveness
+      attractiveness: !!attractiveness,
+      isAdminMode: isAdminMode
     });
-  }, [currentUser, isAdmin, currentAdmin, activeView, isLoading, error, attractiveness]);
+  }, [currentUser, isAdmin, currentAdmin, activeView, isLoading, error, attractiveness, isAdminMode]);
 
   // 予期しないエラーが発生した場合のセーフティネット
   useEffect(() => {
@@ -156,8 +175,22 @@ const App: React.FC = () => {
     return <AdminDashboard />;
   }
   
-  if (currentUser && currentUser.email === 'yamane@potentialight.com' && !isAdmin) {
-    return <AdminLoginPage />;
+  // yamane@potentialight.comでログインした場合の特別な処理
+  if (currentUser && currentUser.email === 'yamane@potentialight.com') {
+    // 管理者としてログインしている場合は管理者モードを有効にする
+    if (isAdmin && !isAdminMode) {
+      setIsAdminMode(true);
+    }
+    
+    // 管理者モードの場合は管理画面を表示
+    if (isAdminMode) {
+      return <AdminDashboard />;
+    }
+    
+    // 管理者としてログインしていない場合は管理者ログインページを表示
+    if (!isAdmin) {
+      return <AdminLoginPage />;
+    }
   }
 
   // General user routing logic
@@ -295,6 +328,16 @@ const App: React.FC = () => {
                 </h1>
               </div>
               <div className="flex items-center space-x-4">
+                {/* yamane@potentialight.comの場合のみ管理者モード切り替えボタンを表示 */}
+                {currentUser && currentUser.email === 'yamane@potentialight.com' && (
+                  <button
+                    onClick={handleToggleMode}
+                    className="flex items-center px-4 py-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors border border-purple-200 dark:border-purple-700"
+                  >
+                    <Cog6ToothIcon className="w-4 h-4 mr-2" />
+                    管理者モードに切り替え
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveView('theme')}
                   className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -325,20 +368,20 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </header>
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">採用魅力発見アシスタントへようこそ！</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
-          </div>
-          <FactInputForm onSubmit={handleSubmit} />
-          {isLoading && <LoadingSpinner />}
-          {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
-          {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
-        </main>
-      </div>
-    );
+          </header>
+          <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">採用魅力発見アシスタントへようこそ！</h2>
+              <p className="text-lg text-gray-600 dark:text-gray-400">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
+            </div>
+            <FactInputForm onSubmit={handleSubmit} />
+            {isLoading && <LoadingSpinner />}
+            {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
+            {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
+          </main>
+        </div>
+      );
+    }
   }
   
   return <LoginPage />;
