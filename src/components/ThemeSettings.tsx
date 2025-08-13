@@ -40,14 +40,34 @@ const ThemeSettings: React.FC = () => {
     accentColor: '#3b82f6'
   });
   const [previewing, setPreviewing] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
       const userPrefs = loadUserPreferences(currentUser.uid);
       setPreferences(userPrefs);
       setIsDarkMode(userPrefs.theme.mode === 'dark');
+      setHasUnsavedChanges(true); // 初期化時に変更フラグを設定
+    } else {
+      // ユーザーがログインしていない場合でもデフォルト設定を使用
+      const defaultPrefs = loadUserPreferences('default');
+      setPreferences(defaultPrefs);
+      setIsDarkMode(defaultPrefs.theme.mode === 'dark');
+      setHasUnsavedChanges(true); // 初期化時に変更フラグを設定
     }
   }, [currentUser]);
+
+  // preferencesがnullの場合のフォールバック
+  if (!preferences) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">設定を読み込み中...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleThemeChange = (theme: PresetTheme) => {
     setSelectedTheme(theme);
@@ -72,6 +92,7 @@ const ThemeSettings: React.FC = () => {
       
       applyTheme(newTheme);
       playSound('buttonClick');
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
 
@@ -103,6 +124,7 @@ const ThemeSettings: React.FC = () => {
       setIsDarkMode(!isDarkMode);
       applyTheme(newTheme);
       playSound('buttonClick');
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
 
@@ -121,6 +143,7 @@ const ThemeSettings: React.FC = () => {
       setIsDarkMode(false);
       applyTheme(newTheme);
       playSound('buttonClick');
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
 
@@ -129,6 +152,7 @@ const ThemeSettings: React.FC = () => {
       ...prev,
       [colorType]: value
     }));
+    markAsChanged(); // 設定変更時にフラグを設定
   };
 
   const handleCreateCustomTheme = () => {
@@ -144,6 +168,7 @@ const ThemeSettings: React.FC = () => {
       applyTheme(customTheme);
       showConfetti();
       playSound('success');
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
 
@@ -162,9 +187,23 @@ const ThemeSettings: React.FC = () => {
   const handleSavePreferences = () => {
     if (currentUser && preferences) {
       saveUserPreferences(currentUser.uid, preferences);
+      setHasUnsavedChanges(false); // 保存後に変更フラグをリセット
       showConfetti();
       playSound('success');
+      
+      // 成功メッセージを表示
+      alert('設定が正常に保存されました！🎉');
+    } else {
+      alert('設定の保存に失敗しました。ユーザー情報を確認してください。');
     }
+  };
+
+  // 設定が変更されたかどうかをチェック
+  const hasChanges = preferences !== null && hasUnsavedChanges;
+
+  // 設定変更時にフラグを設定
+  const markAsChanged = () => {
+    setHasUnsavedChanges(true);
   };
 
   const handleAnimationToggle = (enabled: boolean) => {
@@ -176,6 +215,7 @@ const ThemeSettings: React.FC = () => {
           enabled
         }
       } : null);
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
 
@@ -188,12 +228,9 @@ const ThemeSettings: React.FC = () => {
           enabled
         }
       } : null);
+      markAsChanged(); // 設定変更時にフラグを設定
     }
   };
-
-  if (!preferences) {
-    return <div className="flex justify-center items-center h-64">読み込み中...</div>;
-  }
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -573,7 +610,12 @@ const ThemeSettings: React.FC = () => {
         
         <button
           onClick={handleSavePreferences}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+          disabled={!hasChanges}
+          className={`px-6 py-3 rounded-lg transition-colors flex items-center space-x-2 ${
+            hasChanges
+              ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+          }`}
         >
           <DownloadIcon className="w-5 h-5" />
           <span>設定を保存</span>
