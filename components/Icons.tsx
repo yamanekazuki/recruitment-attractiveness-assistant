@@ -155,3 +155,23 @@ export const PaletteIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V6.75M6.75 21a3.75 3.75 0 003.75-3.75V6.75m0 0V4.125c0-.621.504-1.125 1.125-1.125H21M4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M4.125 3H3m0 0h1.125M21 12v2.25c0 .621-.504 1.125-1.125 1.125h-5.25M21 12V6.75m0 0V4.125c0-.621-.504-1.125-1.125-1.125h-5.25M21 6.75v4.072M6.75 6.75v4.072M6.75 6.75V4.125c0-.621.504-1.125 1.125-1.125h5.25M6.75 6.75V3m0 0h1.125M3 3h1.125" />
   </svg>
 );
+
+// 不足しているアイコンを追加
+export const FireIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003.2.814z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 12.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" />
+  </svg>
+);
+
+export const TrophyIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 013 3h-15a3 3 0 013-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497c-.48 0-.906.358-.98.836l-.037.187a1.687 1.687 0 002.062 1.703h.828c.48 0 .906-.358.98-.836l.037-.187a1.687 1.687 0 00-2.062-1.703h-.828z" />
+  </svg>
+);
+
+export const ArrowTrendingUpIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+  </svg>
+);
