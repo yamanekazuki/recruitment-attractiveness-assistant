@@ -5,14 +5,16 @@ import LoginPage from './src/components/LoginPage';
 import AdminLoginPage from './src/components/AdminLoginPage';
 import AdminDashboard from './src/components/AdminDashboard';
 import ThemeSettings from './src/components/ThemeSettings';
+import UserAnalytics from './src/components/UserAnalytics';
 import { FactInputForm } from './components/FactInputForm';
 import { AttractivenessDisplay } from './components/AttractivenessDisplay';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
-import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon } from './components/Icons';
+import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon, ChartBarIcon } from './components/Icons';
 import { loadUserPreferences, applyTheme } from './src/services/themeService';
+import { saveAnalysisHistory } from './src/services/historyService';
 
 const App: React.FC = () => {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -20,7 +22,8 @@ const App: React.FC = () => {
   const [attractiveness, setAttractiveness] = useState<AttractivenessOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings' | 'analytics'>('main');
+  const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
 
   // テーマ設定の初期化
   useEffect(() => {
@@ -55,28 +58,36 @@ const App: React.FC = () => {
 
     setIsLoading(true);
     setError(null);
-    setAttractiveness(null); // 前回の結果をクリア
+    setAttractiveness(null);
+    setAnalysisStartTime(Date.now());
     
     try {
-      console.log('AI分析開始:', fact); // デバッグログ
+      console.log('AI分析開始:', fact);
       const result = await generateAttractivenessPoints(fact);
-      console.log('AI分析完了:', result); // デバッグログ
+      console.log('AI分析完了:', result);
       
       if (result && result.points && result.points.length > 0) {
         setAttractiveness(result);
         setError(null);
+        
+        // 分析履歴を保存
+        if (currentUser && analysisStartTime) {
+          const sessionDuration = Math.round((Date.now() - analysisStartTime) / 1000);
+          await saveAnalysisHistory(currentUser.uid, fact, result, sessionDuration);
+        }
       } else {
         setError('AI分析の結果が正しく取得できませんでした');
       }
     } catch (err) {
-      console.error('AI分析エラー:', err); // デバッグログ
+      console.error('AI分析エラー:', err);
       const errorMessage = err instanceof Error ? err.message : 'AI分析中にエラーが発生しました';
       setError(errorMessage);
       setAttractiveness(null);
     } finally {
       setIsLoading(false);
+      setAnalysisStartTime(null);
     }
-  }, []);
+  }, [currentUser, analysisStartTime]);
 
   // エラーが発生した場合のリセット処理
   const handleErrorReset = useCallback(() => {
@@ -234,6 +245,43 @@ const App: React.FC = () => {
       );
     }
 
+    if (activeView === 'analytics') {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+          {/* ヘッダー */}
+          <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-6">
+                <div className="flex items-center">
+                  <ZapIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    採用魅力発見アシスタント
+                  </h1>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setActiveView('main')}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <InfoIcon className="w-4 h-4 mr-2" />
+                    メイン画面
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <LogOutIcon className="w-4 h-4 mr-2" />
+                    ログアウト
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+          <UserAnalytics />
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         {/* ヘッダー */}
@@ -260,6 +308,13 @@ const App: React.FC = () => {
                 >
                   <Cog6ToothIcon className="w-4 h-4 mr-2" />
                   設定
+                </button>
+                <button
+                  onClick={() => setActiveView('analytics')}
+                  className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <ChartBarIcon className="w-4 h-4 mr-2" />
+                  分析履歴
                 </button>
                 <button
                   onClick={handleLogout}
