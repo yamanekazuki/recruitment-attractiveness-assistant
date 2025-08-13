@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './src/contexts/AuthContext';
 import { useAdminAuth } from './src/contexts/AdminAuthContext';
 import LoginPage from './src/components/LoginPage';
@@ -12,14 +12,40 @@ import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
 import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon } from './components/Icons';
+import { loadUserPreferences, applyTheme } from './src/services/themeService';
 
 const App: React.FC = () => {
-  const { currentUser, logout } = useAuth();
-  const { currentAdmin, isAdmin } = useAdminAuth();
+  const { currentUser, isAdmin, logout } = useAuth();
+  const { currentAdmin, adminLogout } = useAdminAuth();
   const [attractiveness, setAttractiveness] = useState<AttractivenessOutput | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings'>('main');
+
+  // テーマ設定の初期化
+  useEffect(() => {
+    if (currentUser) {
+      const userPrefs = loadUserPreferences(currentUser.uid);
+      if (userPrefs) {
+        applyTheme(userPrefs.theme);
+      }
+    }
+  }, [currentUser]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      if (isAdmin) {
+        await adminLogout();
+      } else {
+        await logout();
+      }
+      setActiveView('main');
+      setAttractiveness(null);
+      setError(null);
+    } catch (error) {
+      console.error('ログアウトエラー:', error);
+    }
+  }, [isAdmin, adminLogout, logout]);
 
   const handleSubmit = useCallback(async (fact: string) => {
     setIsLoading(true);
@@ -34,21 +60,6 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      if (isAdmin) {
-        await logout();
-      } else {
-        await logout();
-      }
-      setAttractiveness(null);
-      setError(null);
-      setActiveView('main');
-    } catch (error) {
-      console.error('ログアウトエラー:', error);
-    }
-  };
 
   // Admin routing logic
   if (isAdmin && currentAdmin) {

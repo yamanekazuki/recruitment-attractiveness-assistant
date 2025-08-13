@@ -41,6 +41,53 @@ const ThemeSettings: React.FC = () => {
   });
   const [previewing, setPreviewing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [demoElement, setDemoElement] = useState<HTMLElement | null>(null);
+
+  // アニメーション効果のデモ
+  const showAnimationDemo = (type: string) => {
+    if (demoElement) {
+      demoElement.style.animation = 'none';
+      demoElement.offsetHeight; // リフローを強制
+      
+      switch (type) {
+        case 'playful':
+          demoElement.style.animation = 'bounce 0.6s ease-in-out, wiggle 0.8s ease-in-out';
+          break;
+        case 'smooth':
+          demoElement.style.animation = 'fadeIn 0.8s ease-in-out, slideUp 1s ease-out';
+          break;
+        case 'delicate':
+          demoElement.style.animation = 'pulse 1.2s ease-in-out, glow 1.5s ease-in-out';
+          break;
+        default:
+          demoElement.style.animation = 'fadeIn 0.5s ease-in-out';
+      }
+    }
+  };
+
+  // サウンド効果のデモ
+  const playSoundDemo = (type: string) => {
+    playSound(type as any);
+    
+    // 視覚的フィードバック
+    if (demoElement) {
+      demoElement.style.transform = 'scale(1.1)';
+      demoElement.style.transition = 'transform 0.2s ease-in-out';
+      
+      setTimeout(() => {
+        if (demoElement) {
+          demoElement.style.transform = 'scale(1)';
+        }
+      }, 200);
+    }
+  };
+
+  // デモ要素の設定
+  const setDemoElementRef = (element: HTMLDivElement | null) => {
+    if (element) {
+      setDemoElement(element);
+    }
+  };
 
   useEffect(() => {
     if (currentUser) {
@@ -147,29 +194,56 @@ const ThemeSettings: React.FC = () => {
     }
   };
 
-  const handleCustomColorChange = (colorType: string, value: string) => {
+  const handleCustomColorChange = (colorType: 'primaryColor' | 'secondaryColor' | 'accentColor', value: string) => {
     setCustomColors(prev => ({
       ...prev,
       [colorType]: value
     }));
-    markAsChanged(); // 設定変更時にフラグを設定
+    markAsChanged();
   };
 
   const handleCreateCustomTheme = () => {
-    if (selectedTheme && preferences) {
-      const customTheme = createCustomTheme(selectedTheme, customColors, 'カスタムテーマ');
-      
-      setPreferences(prev => prev ? {
-        ...prev,
-        theme: customTheme,
-        customThemes: [...(prev.customThemes || []), customTheme]
-      } : null);
-      
+    if (preferences) {
+      const customTheme: ThemeConfig = {
+        mode: isDarkMode ? 'dark' : 'light',
+        primaryColor: customColors.primaryColor,
+        secondaryColor: customColors.secondaryColor,
+        accentColor: customColors.accentColor,
+        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
+        surfaceColor: isDarkMode ? '#374151' : '#f8fafc',
+        textColor: isDarkMode ? '#f9fafb' : '#1e293b',
+        borderColor: isDarkMode ? '#4b5563' : '#e2e8f0',
+        shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(37, 99, 235, 0.1)',
+        customCSS: ''
+      };
+
+      // テーマを適用
       applyTheme(customTheme);
+      
+      // 設定を更新
+      const updatedPreferences = {
+        ...preferences,
+        theme: customTheme
+      };
+      setPreferences(updatedPreferences);
+      
+      // 成功メッセージ
       showConfetti();
       playSound('success');
-      markAsChanged(); // 設定変更時にフラグを設定
+      alert('カスタムテーマが作成されました！🎨');
+      
+      markAsChanged();
     }
+  };
+
+  // カラーパレットの選択処理
+  const handlePaletteSelect = (palette: any) => {
+    setCustomColors({
+      primaryColor: palette.primary,
+      secondaryColor: palette.secondary,
+      accentColor: palette.accent
+    });
+    markAsChanged();
   };
 
   const handlePreviewTheme = (theme: PresetTheme) => {
@@ -207,29 +281,19 @@ const ThemeSettings: React.FC = () => {
   };
 
   const handleAnimationToggle = (enabled: boolean) => {
-    if (preferences) {
-      setPreferences(prev => prev ? {
-        ...prev,
-        animations: {
-          ...prev.animations,
-          enabled
-        }
-      } : null);
-      markAsChanged(); // 設定変更時にフラグを設定
-    }
+    setPreferences(prev => prev ? {
+      ...prev,
+      animations: { ...prev.animations, enabled }
+    } : null);
+    markAsChanged();
   };
 
   const handleSoundToggle = (enabled: boolean) => {
-    if (preferences) {
-      setPreferences(prev => prev ? {
-        ...prev,
-        sounds: {
-          ...prev.sounds,
-          enabled
-        }
-      } : null);
-      markAsChanged(); // 設定変更時にフラグを設定
-    }
+    setPreferences(prev => prev ? {
+      ...prev,
+      sounds: { ...prev.sounds, enabled }
+    } : null);
+    markAsChanged();
   };
 
   return (
@@ -392,12 +456,12 @@ const ThemeSettings: React.FC = () => {
                           onClick={() => handleCustomColorChange('primaryColor', color.value)}
                         >
                           <div
-                            className="w-8 h-8 rounded-full border-2 border-white shadow-md"
+                            className="w-8 h-8 rounded-full border-2 border-gray-300"
                             style={{ backgroundColor: color.value }}
                           />
                           <div>
-                            <div className="font-medium text-gray-900 dark:text-white">{color.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{color.description}</div>
+                            <p className="font-medium text-gray-900 dark:text-white">{color.name}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{color.description}</p>
                           </div>
                         </div>
                       ))}
@@ -421,13 +485,13 @@ const ThemeSettings: React.FC = () => {
                         <input
                           type="color"
                           value={colorValue}
-                          onChange={(e) => handleCustomColorChange(colorType, e.target.value)}
+                          onChange={(e) => handleCustomColorChange(colorType as 'primaryColor' | 'secondaryColor' | 'accentColor', e.target.value)}
                           className="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer"
                         />
                         <input
                           type="text"
                           value={colorValue}
-                          onChange={(e) => handleCustomColorChange(colorType, e.target.value)}
+                          onChange={(e) => handleCustomColorChange(colorType as 'primaryColor' | 'secondaryColor' | 'accentColor', e.target.value)}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
                           placeholder="#000000"
                         />
@@ -449,76 +513,138 @@ const ThemeSettings: React.FC = () => {
           {/* アニメーションタブ */}
           {activeTab === 'animations' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-                    <SparklesIcon className="w-5 h-5 text-purple-500 mr-2" />
-                    アニメーション効果
-                  </h4>
-                  <div className="space-y-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={preferences.animations.enabled}
-                        onChange={(e) => handleAnimationToggle(e.target.checked)}
-                        className="mr-3"
-                      />
-                      <span>アニメーションを有効にする</span>
+              {/* アニメーション効果 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <SparklesIcon className="w-5 h-5 text-purple-500 mr-2" />
+                  アニメーション効果
+                </h3>
+                
+                {/* デモ要素 */}
+                <div 
+                  ref={setDemoElementRef}
+                  className="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mb-6 mx-auto"
+                >
+                  デモ
+                </div>
+
+                <div className="space-y-4">
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={preferences.animations.enabled}
+                      onChange={(e) => handleAnimationToggle(e.target.checked)}
+                      className="mr-3"
+                    />
+                    <span>アニメーションを有効にする</span>
+                  </label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      アニメーションタイプ
                     </label>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        アニメーションタイプ
-                      </label>
-                      <select
-                        value={preferences.animations.type}
-                        onChange={(e) => setPreferences(prev => prev ? {
-                          ...prev,
-                          animations: { ...prev.animations, type: e.target.value as any }
-                        } : null)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      >
-                        <option value="subtle">繊細</option>
-                        <option value="smooth">スムーズ</option>
-                        <option value="playful">遊び心</option>
-                        <option value="none">なし</option>
-                      </select>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {[
+                        { value: 'playful', label: '遊び心', description: '楽しく弾むような動き' },
+                        { value: 'smooth', label: 'スムーズ', description: '滑らかで自然な動き' },
+                        { value: 'delicate', label: '繊細', description: '繊細で上品な動き' }
+                      ].map((type) => (
+                        <div
+                          key={type.value}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            preferences.animations.type === type.value
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          }`}
+                          onClick={() => {
+                            setPreferences(prev => prev ? {
+                              ...prev,
+                              animations: { ...prev.animations, type: type.value as any }
+                            } : null);
+                            markAsChanged();
+                          }}
+                        >
+                          <div className="text-center">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                showAnimationDemo(type.value);
+                              }}
+                              className="w-full py-2 px-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm mb-2"
+                            >
+                              デモを見る
+                            </button>
+                            <h4 className="font-medium text-gray-900 dark:text-white">{type.label}</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{type.description}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center">
-                    <MusicalNoteIcon className="w-5 h-5 text-green-500 mr-2" />
-                    サウンド効果
-                  </h4>
-                  <div className="space-y-4">
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={preferences.sounds.enabled}
-                        onChange={(e) => handleSoundToggle(e.target.checked)}
-                        className="mr-3"
-                      />
-                      <span>サウンドを有効にする</span>
+              {/* サウンド効果 */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                  <MusicalNoteIcon className="w-5 h-5 text-green-500 mr-2" />
+                  サウンド効果
+                </h3>
+                
+                <div className="space-y-4">
+                  <label className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={preferences.sounds.enabled}
+                      onChange={(e) => handleSoundToggle(e.target.checked)}
+                      className="mr-3"
+                    />
+                    <span>サウンドを有効にする</span>
+                  </label>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      音量
                     </label>
-                    
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        音量
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={preferences.sounds.volume}
-                        onChange={(e) => setPreferences(prev => prev ? {
-                          ...prev,
-                          sounds: { ...prev.sounds, volume: parseFloat(e.target.value) }
-                        } : null)}
-                        className="w-full"
-                      />
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={preferences.sounds.volume}
+                      onChange={(e) => setPreferences(prev => prev ? {
+                        ...prev,
+                        sounds: { ...prev.sounds, volume: parseFloat(e.target.value) }
+                      } : null)}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <span>0%</span>
+                      <span>{Math.round(preferences.sounds.volume * 100)}%</span>
+                      <span>100%</span>
+                    </div>
+                  </div>
+
+                  {/* サウンド効果のデモ */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      サウンド効果のデモ
+                    </label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {[
+                        { type: 'buttonClick', label: 'ボタンクリック' },
+                        { type: 'success', label: '成功音' },
+                        { type: 'error', label: 'エラー音' },
+                        { type: 'notification', label: '通知音' }
+                      ].map((sound) => (
+                        <button
+                          key={sound.type}
+                          onClick={() => playSoundDemo(sound.type)}
+                          className="py-2 px-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm"
+                        >
+                          {sound.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -685,3 +811,50 @@ const ThemeCard: React.FC<ThemeCardProps> = ({ theme, isSelected, onSelect, onPr
 };
 
 export default ThemeSettings;
+
+// CSSアニメーションのスタイル
+const animationStyles = `
+  @keyframes bounce {
+    0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+    40%, 43% { transform: translate3d(0,-30px,0); }
+    70% { transform: translate3d(0,-15px,0); }
+    90% { transform: translate3d(0,-4px,0); }
+  }
+  
+  @keyframes wiggle {
+    0%, 7% { transform: rotateZ(0); }
+    15% { transform: rotateZ(-15deg); }
+    20% { transform: rotateZ(10deg); }
+    25% { transform: rotateZ(-10deg); }
+    30% { transform: rotateZ(6deg); }
+    35% { transform: rotateZ(-4deg); }
+    40%, 100% { transform: rotateZ(0); }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+    50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6); }
+  }
+`;
+
+// スタイルを適用
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.textContent = animationStyles;
+  document.head.appendChild(style);
+}
