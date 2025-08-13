@@ -5,10 +5,9 @@ import { ZapIcon } from '../../components/Icons';
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isSignup, setIsSignup] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,16 +15,12 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isSignup) {
-        await signup(email, password);
-      } else {
-        await login(email, password);
-      }
+      await login(email, password);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError('認証に失敗しました');
+        setError('ログインに失敗しました');
       }
     } finally {
       setLoading(false);
@@ -61,7 +56,7 @@ const LoginPage: React.FC = () => {
             </h1>
           </div>
           <p className="text-gray-600 text-sm">
-            {isSignup ? 'アカウントを作成して開始' : 'ログインして開始'}
+            ログインして開始
           </p>
         </div>
 
@@ -92,7 +87,7 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* フォーム */}
+        {/* ログインフォーム */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
@@ -138,28 +133,21 @@ const LoginPage: React.FC = () => {
             {loading ? (
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                {isSignup ? 'アカウント作成中...' : 'ログイン中...'}
+                ログイン中...
               </div>
             ) : (
-              isSignup ? 'アカウントを作成' : 'ログイン'
+              'ログイン'
             )}
           </button>
         </form>
-
-        {/* 切り替えリンク */}
-        <div className="text-center mt-6">
-          <button
-            onClick={() => setIsSignup(!isSignup)}
-            className="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors"
-          >
-            {isSignup ? '既にアカウントをお持ちですか？ログイン' : 'アカウントをお持ちでないですか？新規作成'}
-          </button>
-        </div>
 
         {/* 説明 */}
         <div className="mt-8 p-4 bg-purple-50 rounded-lg">
           <p className="text-sm text-purple-700 text-center">
             このアプリケーションは、会社の事実を分析して採用魅力ポイントを生成するAI搭載ツールです。
+          </p>
+          <p className="text-sm text-purple-600 text-center mt-2">
+            アカウントは管理者から発行されます。
           </p>
         </div>
       </div>
