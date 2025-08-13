@@ -128,8 +128,14 @@ const AdminDashboard: React.FC = () => {
   // ユーザー画面に移動する関数
   const handleSwitchToUserMode = () => {
     // 管理画面からユーザー画面に切り替える
-    // この関数は親コンポーネント（App.tsx）で処理される
-    window.location.reload(); // 一時的な解決策としてページをリロード
+    // 親コンポーネント（App.tsx）の状態を更新する
+    if (window.parent && window.parent !== window) {
+      // 親ウィンドウが存在する場合
+      window.parent.postMessage({ type: 'SWITCH_TO_USER_MODE' }, '*');
+    } else {
+      // 直接ページをリロードしてユーザーモードに戻る
+      window.location.reload();
+    }
   };
 
   // 監査ログのエクスポート

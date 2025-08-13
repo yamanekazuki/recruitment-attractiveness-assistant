@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './src/contexts/AuthContext';
 import { useAdminAuth } from './src/contexts/AdminAuthContext';
 import LoginPage from './src/components/LoginPage';
-import AdminLoginPage from './src/components/AdminLoginPage';
 import AdminDashboard from './src/components/AdminDashboard';
 import ThemeSettings from './src/components/ThemeSettings';
 import UserAnalytics from './src/components/UserAnalytics';
@@ -45,6 +44,21 @@ const App: React.FC = () => {
       }
     }
   }, [currentUser, isAdmin]);
+
+  // AdminDashboardからのメッセージを受信
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'SWITCH_TO_USER_MODE') {
+        setIsAdminMode(false);
+        setActiveView('main');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -185,11 +199,6 @@ const App: React.FC = () => {
     // 管理者モードの場合は管理画面を表示
     if (isAdminMode) {
       return <AdminDashboard />;
-    }
-    
-    // 管理者としてログインしていない場合は管理者ログインページを表示
-    if (!isAdmin) {
-      return <AdminLoginPage />;
     }
   }
 
