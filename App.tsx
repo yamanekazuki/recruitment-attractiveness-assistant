@@ -368,20 +368,20 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
-          </header>
-          <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">採用魅力発見アシスタントへようこそ！</h2>
-              <p className="text-lg text-gray-600 dark:text-gray-400">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
-            </div>
-            <FactInputForm onSubmit={handleSubmit} />
-            {isLoading && <LoadingSpinner />}
-            {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
-            {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
-          </main>
-        </div>
-      );
-    }
+          </div>
+        </header>
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">採用魅力発見アシスタントへようこそ！</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
+          </div>
+          <FactInputForm onSubmit={handleSubmit} />
+          {isLoading && <LoadingSpinner />}
+          {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
+          {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
+        </main>
+      </div>
+    );
   }
   
   return <LoginPage />;
