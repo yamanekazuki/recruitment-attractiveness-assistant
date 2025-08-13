@@ -12,15 +12,53 @@ const AdminDashboard: React.FC = () => {
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
+  // メール送信機能
+  const sendAccountNotification = async (email: string, password: string) => {
+    try {
+      // メール送信のAPIエンドポイントを呼び出し
+      const response = await fetch('/api/send-account-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: email,
+          userPassword: password,
+          adminEmail: 'yamane@potentialight.com'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('メール送信に失敗しました');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('メール送信エラー:', error);
+      return false;
+    }
+  };
+
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage('');
 
     try {
+      // ユーザーアカウントを作成
       await signup(newUserEmail, newUserPassword);
-      setMessage('ユーザーアカウントが正常に作成されました');
-      setMessageType('success');
+      
+      // アカウント作成成功後、メール通知を送信
+      const emailSent = await sendAccountNotification(newUserEmail, newUserPassword);
+      
+      if (emailSent) {
+        setMessage('ユーザーアカウントが正常に作成され、メール通知が送信されました');
+        setMessageType('success');
+      } else {
+        setMessage('ユーザーアカウントは作成されましたが、メール通知の送信に失敗しました');
+        setMessageType('error');
+      }
+      
       setNewUserEmail('');
       setNewUserPassword('');
     } catch (error) {
@@ -137,6 +175,13 @@ const AdminDashboard: React.FC = () => {
                 )}
               </button>
             </form>
+
+            {/* メール通知の説明 */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-700">
+                📧 アカウント作成後、指定されたメールアドレスにアカウント情報が自動送信されます
+              </p>
+            </div>
           </div>
 
           {/* 管理情報セクション */}
@@ -167,6 +212,13 @@ const AdminDashboard: React.FC = () => {
                 <h3 className="font-medium text-purple-900 mb-2">ユーザー管理</h3>
                 <p className="text-purple-700 text-sm">
                   作成したユーザーアカウントは、一般ユーザー画面でログインできます。
+                </p>
+              </div>
+
+              <div className="p-4 bg-yellow-50 rounded-lg">
+                <h3 className="font-medium text-yellow-900 mb-2">メール通知</h3>
+                <p className="text-yellow-700 text-sm">
+                  ユーザーアカウント作成時、自動的にメール通知が送信されます。
                 </p>
               </div>
             </div>
