@@ -10,8 +10,8 @@ import type {
   AnalysisHistory, 
   UserAnalytics, 
   CharmCategoryAnalysis 
-} from '../types';
-import { CHARM_CATEGORIES } from '../types';
+} from '../types/analysis';
+import { CHARM_CATEGORIES } from '../types/analysis';
 import { 
   ChartBarIcon, 
   ClockIcon, 
