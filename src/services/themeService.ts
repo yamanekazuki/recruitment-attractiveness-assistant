@@ -8,7 +8,7 @@ const DEFAULT_THEME: ThemeConfig = {
   secondaryColor: '#1e40af',
   accentColor: '#3b82f6',
   backgroundColor: '#ffffff', // 白に設定
-  surfaceColor: '#f8fafc',
+  surfaceColor: '#ffffff', // 白に設定
   textColor: '#1e293b',
   borderColor: '#e2e8f0',
   shadowColor: 'rgba(37, 99, 235, 0.1)'

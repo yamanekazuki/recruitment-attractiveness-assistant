@@ -39,6 +39,25 @@ const App: React.FC = () => {
     }
   }, [currentUser]);
 
+  // テーマ設定の変更を監視
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'globalTheme' && e.newValue) {
+        try {
+          const newTheme = JSON.parse(e.newValue);
+          applyTheme(newTheme);
+        } catch (error) {
+          console.error('テーマの適用に失敗:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   // yamane@potentialight.comでログインした場合の初期設定
   useEffect(() => {
     if (currentUser && currentUser.email === 'yamane@potentialight.com') {
@@ -54,6 +73,9 @@ const App: React.FC = () => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'SWITCH_TO_USER_MODE') {
         setIsAdminMode(false);
+        setActiveView('main');
+      }
+      if (event.data && event.data.type === 'SWITCH_TO_MAIN_VIEW') {
         setActiveView('main');
       }
     };

@@ -42,6 +42,7 @@ const ThemeSettings: React.FC = () => {
   const [previewing, setPreviewing] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [demoElement, setDemoElement] = useState<HTMLElement | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false); // 成功メッセージの表示状態
 
   // アニメーション効果のデモ
   const showAnimationDemo = (type: string) => {
@@ -297,7 +298,7 @@ const ThemeSettings: React.FC = () => {
         secondaryColor: customColors.secondaryColor,
         accentColor: customColors.accentColor,
         backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', // デフォルト背景色を白に
-        surfaceColor: isDarkMode ? '#374151' : '#f8fafc',
+        surfaceColor: isDarkMode ? '#374151' : '#ffffff', // デフォルト背景色を白に
         textColor: isDarkMode ? '#f9fafb' : '#1e293b',
         borderColor: isDarkMode ? '#4b5563' : '#e2e8f0',
         shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(37, 99, 235, 0.1)'
@@ -316,7 +317,18 @@ const ThemeSettings: React.FC = () => {
       // 成功メッセージを表示
       showConfetti();
       playSound('success');
-      alert('設定が正常に保存されました！🎉\nテーマがメイン画面に反映されます。');
+      setShowSuccessMessage(true);
+      
+      // 3秒後にメイン画面に遷移
+      setTimeout(() => {
+        // 親コンポーネントにメイン画面への遷移を通知
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'SWITCH_TO_MAIN_VIEW' }, '*');
+        } else {
+          // 直接ページをリロードしてメイン画面に戻る
+          window.location.reload();
+        }
+      }, 3000);
     } else {
       alert('設定の保存に失敗しました。ユーザー情報を確認してください。');
     }
@@ -794,6 +806,25 @@ const ThemeSettings: React.FC = () => {
           <span>設定を保存</span>
         </button>
       </div>
+
+      {/* 成功メッセージ */}
+      {showSuccessMessage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md mx-4 text-center">
+            <div className="text-6xl mb-4">🎉</div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              設定が正常に保存されました！
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              テーマがメイン画面に反映されます。<br />
+              3秒後にメイン画面に移動します...
+            </p>
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
