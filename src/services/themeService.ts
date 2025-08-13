@@ -7,7 +7,7 @@ const DEFAULT_THEME: ThemeConfig = {
   primaryColor: '#2563eb',
   secondaryColor: '#1e40af',
   accentColor: '#3b82f6',
-  backgroundColor: '#ffffff',
+  backgroundColor: '#ffffff', // 白に設定
   surfaceColor: '#f8fafc',
   textColor: '#1e293b',
   borderColor: '#e2e8f0',
@@ -83,6 +83,9 @@ export const applyTheme = (theme: ThemeConfig): void => {
   
   // ローカルストレージに保存
   localStorage.setItem('userTheme', JSON.stringify(theme));
+  
+  // グローバルなテーマ設定も保存
+  localStorage.setItem('globalTheme', JSON.stringify(theme));
 };
 
 // カスタムCSSの適用
@@ -101,24 +104,50 @@ export const isDarkModePreferred = (): boolean => {
   return window.matchMedia('(prefers-color-scheme: dark)').matches;
 };
 
+// グローバルテーマの読み込み
+export const loadGlobalTheme = (): ThemeConfig => {
+  try {
+    const saved = localStorage.getItem('globalTheme');
+    if (saved) {
+      return { ...DEFAULT_THEME, ...JSON.parse(saved) };
+    }
+  } catch (error) {
+    console.error('グローバルテーマの読み込みに失敗:', error);
+  }
+  
+  return DEFAULT_THEME;
+};
+
 // ユーザー設定の読み込み
 export const loadUserPreferences = (userId: string): UserPreferences => {
   try {
     const saved = localStorage.getItem(`userPreferences_${userId}`);
     if (saved) {
-      return { ...DEFAULT_PREFERENCES, ...JSON.parse(saved) };
+      const parsed = JSON.parse(saved);
+      // テーマが存在しない場合はグローバルテーマを使用
+      if (!parsed.theme) {
+        parsed.theme = loadGlobalTheme();
+      }
+      return { ...DEFAULT_PREFERENCES, ...parsed };
     }
   } catch (error) {
     console.error('ユーザー設定の読み込みに失敗:', error);
   }
   
-  return DEFAULT_PREFERENCES;
+  // デフォルト設定にグローバルテーマを適用
+  const preferences = { ...DEFAULT_PREFERENCES };
+  preferences.theme = loadGlobalTheme();
+  return preferences;
 };
 
 // ユーザー設定の保存
 export const saveUserPreferences = (userId: string, preferences: UserPreferences): void => {
   try {
     localStorage.setItem(`userPreferences_${userId}`, JSON.stringify(preferences));
+    // グローバルテーマも更新
+    localStorage.setItem('globalTheme', JSON.stringify(preferences.theme));
+    // 即座にテーマを適用
+    applyTheme(preferences.theme);
   } catch (error) {
     console.error('ユーザー設定の保存に失敗:', error);
   }

@@ -12,7 +12,7 @@ import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
 import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon, ChartBarIcon } from './components/Icons';
-import { loadUserPreferences, applyTheme } from './src/services/themeService';
+import { loadUserPreferences, applyTheme, loadGlobalTheme } from './src/services/themeService';
 import { saveAnalysisHistory } from './src/services/historyService';
 
 const App: React.FC = () => {
@@ -32,6 +32,10 @@ const App: React.FC = () => {
       if (userPrefs) {
         applyTheme(userPrefs.theme);
       }
+    } else {
+      // ユーザーがログインしていない場合でもグローバルテーマを適用
+      const globalTheme = loadGlobalTheme();
+      applyTheme(globalTheme);
     }
   }, [currentUser]);
 

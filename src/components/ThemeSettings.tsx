@@ -237,12 +237,42 @@ const ThemeSettings: React.FC = () => {
   };
 
   // カラーパレットの選択処理
-  const handlePaletteSelect = (palette: any) => {
-    setCustomColors({
-      primaryColor: palette.primary,
-      secondaryColor: palette.secondary,
-      accentColor: palette.accent
-    });
+  const handleColorPaletteSelect = (colorValue: string) => {
+    // 現在選択されている色タイプを確認
+    const currentColorType = Object.entries(customColors).find(
+      ([, value]) => value === colorValue
+    )?.[0];
+
+    if (currentColorType) {
+      // 既存の色と同じ場合は何もしない
+      return;
+    }
+
+    // ユーザーにどの色タイプに適用するかを選択させる
+    const colorType = prompt(
+      `この色をどの色タイプに適用しますか？\n1: プライマリ\n2: セカンダリ\n3: アクセント\n\n番号を入力してください（1-3）:`
+    );
+
+    let selectedType: 'primaryColor' | 'secondaryColor' | 'accentColor';
+    switch (colorType) {
+      case '1':
+        selectedType = 'primaryColor';
+        break;
+      case '2':
+        selectedType = 'secondaryColor';
+        break;
+      case '3':
+        selectedType = 'accentColor';
+        break;
+      default:
+        alert('無効な選択です。1-3の番号を入力してください。');
+        return;
+    }
+
+    setCustomColors(prev => ({
+      ...prev,
+      [selectedType]: colorValue
+    }));
     markAsChanged();
   };
 
@@ -260,13 +290,33 @@ const ThemeSettings: React.FC = () => {
 
   const handleSavePreferences = () => {
     if (currentUser && preferences) {
-      saveUserPreferences(currentUser.uid, preferences);
+      // カスタムカラーをテーマに反映
+      const updatedTheme = {
+        ...preferences.theme,
+        primaryColor: customColors.primaryColor,
+        secondaryColor: customColors.secondaryColor,
+        accentColor: customColors.accentColor,
+        backgroundColor: isDarkMode ? '#1f2937' : '#ffffff', // デフォルト背景色を白に
+        surfaceColor: isDarkMode ? '#374151' : '#f8fafc',
+        textColor: isDarkMode ? '#f9fafb' : '#1e293b',
+        borderColor: isDarkMode ? '#4b5563' : '#e2e8f0',
+        shadowColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(37, 99, 235, 0.1)'
+      };
+
+      const updatedPreferences = {
+        ...preferences,
+        theme: updatedTheme
+      };
+
+      // 設定を保存
+      saveUserPreferences(currentUser.uid, updatedPreferences);
+      setPreferences(updatedPreferences);
       setHasUnsavedChanges(false); // 保存後に変更フラグをリセット
-      showConfetti();
-      playSound('success');
       
       // 成功メッセージを表示
-      alert('設定が正常に保存されました！🎉');
+      showConfetti();
+      playSound('success');
+      alert('設定が正常に保存されました！🎉\nテーマがメイン画面に反映されます。');
     } else {
       alert('設定の保存に失敗しました。ユーザー情報を確認してください。');
     }
@@ -440,36 +490,6 @@ const ThemeSettings: React.FC = () => {
           {/* カスタムカラータブ */}
           {activeTab === 'colors' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Object.entries(COLOR_PALETTES).map(([category, colors]) => (
-                  <div key={category} className="space-y-4">
-                    <h4 className="font-medium text-gray-900 dark:text-white capitalize">
-                      {category === 'professional' && 'プロフェッショナル'}
-                      {category === 'creative' && 'クリエイティブ'}
-                      {category === 'seasonal' && '季節'}
-                    </h4>
-                    <div className="space-y-2">
-                      {colors.map((color) => (
-                        <div
-                          key={color.value}
-                          className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                          onClick={() => handleCustomColorChange('primaryColor', color.value)}
-                        >
-                          <div
-                            className="w-8 h-8 rounded-full border-2 border-gray-300"
-                            style={{ backgroundColor: color.value }}
-                          />
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">{color.name}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{color.description}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
               {/* カラーピッカー */}
               <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                 <h4 className="font-medium text-gray-900 dark:text-white mb-4">カスタムカラー</h4>
@@ -499,13 +519,40 @@ const ThemeSettings: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                
-                <button
-                  onClick={handleCreateCustomTheme}
-                  className="mt-4 w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  🎨 カスタムテーマを作成
-                </button>
+              </div>
+
+              {/* カラーパレット選択 */}
+              <div className="space-y-6">
+                <h4 className="font-medium text-gray-900 dark:text-white">カラーパレットから選択</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {Object.entries(COLOR_PALETTES).map(([category, colors]) => (
+                    <div key={category} className="space-y-4">
+                      <h5 className="font-medium text-gray-900 dark:text-white capitalize">
+                        {category === 'professional' && 'プロフェッショナル'}
+                        {category === 'creative' && 'クリエイティブ'}
+                        {category === 'seasonal' && '季節'}
+                      </h5>
+                      <div className="space-y-2">
+                        {colors.map((color) => (
+                          <div
+                            key={color.value}
+                            className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                            onClick={() => handleColorPaletteSelect(color.value)}
+                          >
+                            <div
+                              className="w-8 h-8 rounded-full border-2 border-gray-300"
+                              style={{ backgroundColor: color.value }}
+                            />
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-white">{color.name}</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{color.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
