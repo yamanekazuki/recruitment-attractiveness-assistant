@@ -61,6 +61,14 @@ export const applyTheme = (theme: ThemeConfig): void => {
   root.style.setProperty('--color-border', theme.borderColor);
   root.style.setProperty('--color-shadow', theme.shadowColor);
   
+  // 追加のCSS変数
+  root.style.setProperty('--color-primary-light', lightenColor(theme.primaryColor, 0.2));
+  root.style.setProperty('--color-primary-dark', darkenColor(theme.primaryColor, 0.2));
+  root.style.setProperty('--color-secondary-light', lightenColor(theme.secondaryColor, 0.2));
+  root.style.setProperty('--color-secondary-dark', darkenColor(theme.secondaryColor, 0.2));
+  root.style.setProperty('--color-accent-light', lightenColor(theme.accentColor, 0.2));
+  root.style.setProperty('--color-accent-dark', darkenColor(theme.accentColor, 0.2));
+  
   // ダークモードの適用
   if (theme.mode === 'dark' || (theme.mode === 'auto' && isDarkModePreferred())) {
     root.classList.add('dark');
@@ -259,4 +267,24 @@ export const importTheme = (themeData: string): ThemeConfig | null => {
 const validateTheme = (theme: any): boolean => {
   const requiredColors = ['primaryColor', 'secondaryColor', 'accentColor', 'backgroundColor', 'surfaceColor', 'textColor'];
   return requiredColors.every(color => theme[color] && validateColor(theme[color]));
+};
+
+// 色を明るくする関数
+const lightenColor = (color: string, amount: number): string => {
+  const hex = color.replace('#', '');
+  const num = parseInt(hex, 16);
+  const r = Math.min(255, ((num >> 16) & 0xff) + Math.round(255 * amount));
+  const g = Math.min(255, ((num >> 8) & 0xff) + Math.round(255 * amount));
+  const b = Math.min(255, (num & 0xff) + Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+};
+
+// 色を暗くする関数
+const darkenColor = (color: string, amount: number): string => {
+  const hex = color.replace('#', '');
+  const num = parseInt(hex, 16);
+  const r = Math.max(0, ((num >> 16) & 0xff) - Math.round(255 * amount));
+  const g = Math.max(0, ((num >> 8) & 0xff) - Math.round(255 * amount));
+  const b = Math.max(0, (num & 0xff) - Math.round(255 * amount));
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };

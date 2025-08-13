@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* テーマ変数のデフォルト値 */
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #1e40af;
+  --color-accent: #3b82f6;
+  --color-background: #ffffff;
+  --color-surface: #f8fafc;
+  --color-text: #1e293b;
+  --color-border: #e2e8f0;
+  --color-shadow: rgba(37, 99, 235, 0.1);
+  --color-primary-light: #60a5fa;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary-light: #4f46e5;
+  --color-secondary-dark: #1e1b4b;
+  --color-accent-light: #93c5fd;
+  --color-accent-dark: #1e40af;
+}
+
+/* ダークモードのテーマ変数 */
+.dark {
+  --color-primary: #3b82f6;
+  --color-secondary: #6366f1;
+  --color-accent: #60a5fa;
+  --color-background: #1f2937;
+  --color-surface: #374151;
+  --color-text: #f9fafb;
+  --color-border: #4b5563;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-primary-light: #60a5fa;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary-light: #818cf8;
+  --color-secondary-dark: #4338ca;
+  --color-accent-light: #93c5fd;
+  --color-accent-dark: #1e40af;
+}
+
+/* テーマ変数を使用したスタイル */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* カスタムカラーを使用したコンポーネント */
+.theme-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.theme-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+}
+
+.theme-accent {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.theme-primary-light {
+  background-color: var(--color-primary-light);
+  color: white;
+}
+
+.theme-secondary-light {
+  background-color: var(--color-secondary-light);
+  color: white;
+}
+
+.theme-accent-light {
+  background-color: var(--color-accent-light);
+  color: white;
+}
+
+/* ボタンのテーマ適用 */
+.btn-theme-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.btn-theme-primary:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.btn-theme-secondary {
+  background-color: var(--color-secondary);
+  color: white;
+  border-color: var(--color-secondary);
+}
+
+.btn-theme-secondary:hover {
+  background-color: var(--color-secondary-dark);
+  border-color: var(--color-secondary-dark);
+}
+
+.btn-theme-accent {
+  background-color: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+}
+
+.btn-theme-accent:hover {
+  background-color: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+}
+
+/* テキストのテーマ適用 */
+.text-theme-primary {
+  color: var(--color-primary);
+}
+
+.text-theme-secondary {
+  color: var(--color-secondary);
+}
+
+.text-theme-accent {
+  color: var(--color-accent);
+}
+
+/* ボーダーのテーマ適用 */
+.border-theme-primary {
+  border-color: var(--color-primary);
+}
+
+.border-theme-secondary {
+  border-color: var(--color-secondary);
+}
+
+.border-theme-accent {
+  border-color: var(--color-accent);
+}
+
+/* シャドウのテーマ適用 */
+.shadow-theme {
+  box-shadow: 0 4px 6px -1px var(--color-shadow);
+}
+
+/* グラデーションのテーマ適用 */
+.gradient-theme {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary), var(--color-accent));
+}
+
+/* フォーカス状態のテーマ適用 */
+.focus-theme:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ホバー状態のテーマ適用 */
+.hover-theme:hover {
+  background-color: var(--color-primary-light);
+  color: white;
+}
+
+/* トランジション */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}

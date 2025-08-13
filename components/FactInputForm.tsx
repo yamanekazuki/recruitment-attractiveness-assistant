@@ -6,39 +6,37 @@ interface FactInputFormProps {
   isLoading: boolean;
 }
 
-export const FactInputForm: React.FC<FactInputFormProps> = ({ onSubmit, isLoading }) => {
-  const [fact, setFact] = useState<string>('');
+export const FactInputForm: React.FC<FactInputFormProps> = ({ onSubmit }) => {
+  const [fact, setFact] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (fact.trim() && !isLoading) {
+    if (fact.trim()) {
       onSubmit(fact.trim());
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mb-8">
-      <label htmlFor="factInput" className="block text-lg font-semibold mb-2 text-purple-600">
-        会社の「事実」を入力してください:
-      </label>
-      <textarea
-        id="factInput"
-        value={fact}
-        onChange={(e) => setFact(e.target.value)}
-        placeholder="例: 当社のインフラエンジニアは優秀です。"
-        rows={4}
-        className="w-full p-4 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-200 text-gray-900 placeholder-gray-400 resize-y min-h-[100px]"
-        disabled={isLoading}
-        aria-label="会社に関する事実入力エリア"
-      />
+    <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="mb-4">
+        <label htmlFor="fact" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          会社の「事実」を入力してください:
+        </label>
+        <textarea
+          id="fact"
+          value={fact}
+          onChange={(e) => setFact(e.target.value)}
+          placeholder="例: 当社のインフラエンジニアは優秀です。"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent dark:bg-gray-700 dark:text-white resize-none"
+          rows={4}
+          required
+        />
+      </div>
       <button
         type="submit"
-        disabled={isLoading || !fact.trim()}
-        className="mt-4 w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-opacity-75 transition-all duration-200 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed"
-        aria-label={isLoading ? "魅力ポイントを生成中" : "魅力ポイントを生成する"}
+        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
       >
-        <SendIcon className="w-5 h-5 mr-2" />
-        {isLoading ? '生成中...' : '魅力ポイントを生成'}
+        魅力ポイントを生成
       </button>
     </form>
   );
