@@ -5,7 +5,7 @@ export interface AttractivenessPoint {
 }
 
 export interface AttractivenessOutput {
-  rationalPoints: AttractivenessPoint[];
-  emotionalPoints: AttractivenessPoint[];
+  points: AttractivenessPoint[];
+  summary?: string;
 }
     

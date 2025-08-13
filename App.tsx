@@ -48,18 +48,97 @@ const App: React.FC = () => {
   }, [isAdmin, adminLogout, logout]);
 
   const handleSubmit = useCallback(async (fact: string) => {
+    if (!fact.trim()) {
+      setError('会社の事実を入力してください');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
+    setAttractiveness(null); // 前回の結果をクリア
     
     try {
+      console.log('AI分析開始:', fact); // デバッグログ
       const result = await generateAttractivenessPoints(fact);
-      setAttractiveness(result);
+      console.log('AI分析完了:', result); // デバッグログ
+      
+      if (result && result.points && result.points.length > 0) {
+        setAttractiveness(result);
+        setError(null);
+      } else {
+        setError('AI分析の結果が正しく取得できませんでした');
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'エラーが発生しました');
+      console.error('AI分析エラー:', err); // デバッグログ
+      const errorMessage = err instanceof Error ? err.message : 'AI分析中にエラーが発生しました';
+      setError(errorMessage);
+      setAttractiveness(null);
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  // エラーが発生した場合のリセット処理
+  const handleErrorReset = useCallback(() => {
+    setError(null);
+    setAttractiveness(null);
+    setIsLoading(false);
+  }, []);
+
+  // デバッグ用：現在の状態をログ出力
+  useEffect(() => {
+    console.log('App状態:', {
+      currentUser: !!currentUser,
+      isAdmin,
+      currentAdmin: !!currentAdmin,
+      activeView,
+      isLoading,
+      error,
+      attractiveness: !!attractiveness
+    });
+  }, [currentUser, isAdmin, currentAdmin, activeView, isLoading, error, attractiveness]);
+
+  // 予期しないエラーが発生した場合のセーフティネット
+  useEffect(() => {
+    const handleUnhandledError = (event: ErrorEvent) => {
+      console.error('未処理のエラー:', event.error);
+      setError('予期しないエラーが発生しました。ページを再読み込みしてください。');
+      setIsLoading(false);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('未処理のPromise拒否:', event.reason);
+      setError('処理中にエラーが発生しました。再試行してください。');
+      setIsLoading(false);
+    };
+
+    window.addEventListener('error', handleUnhandledError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener('error', handleUnhandledError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
+
+  // ローディング状態が長時間続く場合のタイムアウト処理
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (isLoading) {
+      timeoutId = setTimeout(() => {
+        console.warn('AI分析がタイムアウトしました');
+        setError('AI分析が時間内に完了しませんでした。再試行してください。');
+        setIsLoading(false);
+      }, 30000); // 30秒でタイムアウト
+    }
+
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [isLoading]);
 
   // Admin routing logic
   if (isAdmin && currentAdmin) {
@@ -200,7 +279,7 @@ const App: React.FC = () => {
           </div>
           <FactInputForm onSubmit={handleSubmit} />
           {isLoading && <LoadingSpinner />}
-          {error && <ErrorMessage message={error} />}
+          {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
           {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
         </main>
       </div>
