@@ -27,6 +27,13 @@ const App: React.FC = () => {
 
   // テーマ設定の初期化
   useEffect(() => {
+    // 背景色を強制的に白に設定
+    document.body.style.backgroundColor = '#ffffff';
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.backgroundColor = '#ffffff';
+    }
+    
     if (currentUser) {
       const userPrefs = loadUserPreferences(currentUser.uid);
       if (userPrefs) {
@@ -232,9 +239,9 @@ const App: React.FC = () => {
   if (currentUser && !isAdmin) {
     if (activeView === 'theme') {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-white">
           {/* ヘッダー */}
-          <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+          <header className="bg-white shadow-lg border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center py-6">
                 <div className="flex items-center">
@@ -269,9 +276,9 @@ const App: React.FC = () => {
 
     if (activeView === 'settings') {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-white">
           {/* ヘッダー */}
-          <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+          <header className="bg-white shadow-lg border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center py-6">
                 <div className="flex items-center">
@@ -315,9 +322,9 @@ const App: React.FC = () => {
 
     if (activeView === 'analytics') {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="min-h-screen bg-white">
           {/* ヘッダー */}
-          <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+          <header className="bg-white shadow-lg border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center py-6">
                 <div className="flex items-center">
@@ -351,9 +358,9 @@ const App: React.FC = () => {
     }
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-white">
         {/* ヘッダー */}
-        <header className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
+        <header className="bg-white shadow-lg border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <div className="flex items-center">
@@ -407,8 +414,8 @@ const App: React.FC = () => {
         </header>
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">採用魅力発見アシスタントへようこそ！</h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">採用魅力発見アシスタントへようこそ！</h2>
+            <p className="text-lg text-gray-600">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
           </div>
           <FactInputForm onSubmit={handleSubmit} />
           {isLoading && <LoadingSpinner />}

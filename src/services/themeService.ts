@@ -51,12 +51,12 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 export const applyTheme = (theme: ThemeConfig): void => {
   const root = document.documentElement;
   
-  // CSS変数を設定
+  // CSS変数を設定（背景色は常に白に固定）
   root.style.setProperty('--color-primary', theme.primaryColor);
   root.style.setProperty('--color-secondary', theme.secondaryColor);
   root.style.setProperty('--color-accent', theme.accentColor);
-  root.style.setProperty('--color-background', theme.backgroundColor);
-  root.style.setProperty('--color-surface', theme.surfaceColor);
+  root.style.setProperty('--color-background', '#ffffff');
+  root.style.setProperty('--color-surface', '#ffffff');
   root.style.setProperty('--color-text', theme.textColor);
   root.style.setProperty('--color-border', theme.borderColor);
   root.style.setProperty('--color-shadow', theme.shadowColor);
@@ -79,6 +79,15 @@ export const applyTheme = (theme: ThemeConfig): void => {
   // カスタムCSSの適用
   if (theme.customCSS) {
     applyCustomCSS(theme.customCSS);
+  }
+  
+  // bodyと#rootの背景色を強制的に白に設定
+  if (typeof document !== 'undefined') {
+    document.body.style.backgroundColor = '#ffffff';
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.backgroundColor = '#ffffff';
+    }
   }
   
   // ローカルストレージに保存

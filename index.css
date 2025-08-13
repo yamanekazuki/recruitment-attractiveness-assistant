@@ -20,16 +20,16 @@
   --color-accent-dark: #1e40af;
 }
 
-/* ダークモードのテーマ変数 */
+/* ダークモードのテーマ変数（背景は白のまま） */
 .dark {
   --color-primary: #3b82f6;
   --color-secondary: #6366f1;
   --color-accent: #60a5fa;
-  --color-background: #1f2937;
-  --color-surface: #374151;
-  --color-text: #f9fafb;
-  --color-border: #4b5563;
-  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #1e293b;
+  --color-border: #e2e8f0;
+  --color-shadow: rgba(37, 99, 235, 0.1);
   --color-primary-light: #60a5fa;
   --color-primary-dark: #1d4ed8;
   --color-secondary-light: #818cf8;
@@ -40,9 +40,15 @@
 
 /* テーマ変数を使用したスタイル */
 body {
-  background-color: var(--color-background);
+  background-color: #ffffff !important;
   color: var(--color-text);
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* アプリケーション全体の背景色を白に固定 */
+#root {
+  background-color: #ffffff !important;
+  min-height: 100vh;
 }
 
 /* カスタムカラーを使用したコンポーネント */
