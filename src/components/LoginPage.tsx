@@ -33,11 +33,20 @@ const LoginPage: React.FC = () => {
     
     try {
       await loginWithGoogle();
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
+    } catch (error: any) {
+      console.error('Googleログインエラー:', error);
+      
+      // エラーの詳細を表示
+      if (error.code === 'auth/unauthorized-domain') {
+        setError('このドメインはFirebaseで許可されていません。\n\n管理者に連絡して、ドメインの設定を確認してください。');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('ポップアップがブロックされました。\n\nブラウザの設定でポップアップを許可してください。');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('ネットワークエラーが発生しました。\n\nインターネット接続を確認してください。');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('ログインがキャンセルされました。\n\n再度お試しください。');
       } else {
-        setError('Googleログインに失敗しました');
+        setError(`Googleログインに失敗しました: ${error.message}`);
       }
     } finally {
       setLoading(false);
@@ -90,7 +99,7 @@ const LoginPage: React.FC = () => {
         {/* ログインフォーム */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm whitespace-pre-line">
               {error}
             </div>
           )}

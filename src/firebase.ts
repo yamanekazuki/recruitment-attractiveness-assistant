@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // 環境変数からFirebase設定を取得
 const firebaseConfig = {
@@ -15,6 +15,7 @@ const firebaseConfig = {
 // 設定の検証
 if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
   console.error('Firebase設定が不完全です。環境変数を確認してください。');
+  console.error('現在の設定:', firebaseConfig);
 }
 
 // Firebaseアプリの初期化
@@ -22,6 +23,12 @@ const app = initializeApp(firebaseConfig);
 
 // Authインスタンスの取得
 export const auth = getAuth(app);
+
+// Google認証プロバイダーの設定
+export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account'
+});
 
 // 認証エラーのハンドリング
 auth.onAuthStateChanged((user) => {
@@ -36,13 +43,22 @@ auth.onAuthStateChanged((user) => {
     const errorCode = (error as any).code;
     switch (errorCode) {
       case 'auth/unauthorized-domain':
-        console.error('このドメインはFirebaseで許可されていません。Firebaseコンソールで承認済みドメインを確認してください。');
+        console.error('このドメインはFirebaseで許可されていません。');
+        console.error('Firebaseコンソールで承認済みドメインを確認してください:');
+        console.error('1. Firebase Console → 認証 → 設定 → 承認済みドメイン');
+        console.error('2. 以下のドメインを追加:');
+        console.error('   - localhost');
+        console.error('   - vercel.app');
+        console.error('   - カスタムドメイン（あれば）');
         break;
       case 'auth/network-request-failed':
         console.error('ネットワークエラーが発生しました。インターネット接続を確認してください。');
         break;
       case 'auth/popup-closed-by-user':
         console.error('ポップアップがユーザーによって閉じられました。');
+        break;
+      case 'auth/popup-blocked':
+        console.error('ポップアップがブロックされました。ブラウザの設定を確認してください。');
         break;
       default:
         console.error('認証エラーが発生しました:', error.message);
@@ -51,5 +67,26 @@ auth.onAuthStateChanged((user) => {
     console.error('認証エラーが発生しました:', error.message);
   }
 });
+
+// Googleログインのヘルパー関数
+export const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result;
+  } catch (error: any) {
+    console.error('Googleログインエラー:', error);
+    
+    // エラーの詳細を表示
+    if (error.code === 'auth/unauthorized-domain') {
+      alert('このドメインはFirebaseで許可されていません。\n\n管理者に連絡して、ドメインの設定を確認してください。');
+    } else if (error.code === 'auth/popup-blocked') {
+      alert('ポップアップがブロックされました。\n\nブラウザの設定でポップアップを許可してください。');
+    } else {
+      alert(`ログインエラーが発生しました: ${error.message}`);
+    }
+    
+    throw error;
+  }
+};
 
 export default app;
