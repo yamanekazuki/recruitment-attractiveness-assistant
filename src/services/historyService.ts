@@ -4,8 +4,8 @@ import type {
   CharmCategoryAnalysis, 
   UserAnalytics,
   CharmCategory 
-} from '../types/analysis';
-import { CHARM_CATEGORIES } from '../types/analysis';
+} from '../types';
+import { CHARM_CATEGORIES } from '../types';
 
 // 魅力ポイントを6P CGM Tech分類に分類する関数
 export const categorizeCharmPoints = (output: AttractivenessOutput): CharmCategoryAnalysis[] => {
