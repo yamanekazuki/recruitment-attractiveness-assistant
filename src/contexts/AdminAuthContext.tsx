@@ -1,11 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  User, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged 
-} from 'firebase/auth';
+import { User, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../firebase';
+import { auditLogPresets } from '../services/auditService';
 
 interface AdminAuthContextType {
   currentAdmin: User | null;
@@ -29,10 +25,7 @@ interface AdminAuthProviderProps {
   children: ReactNode;
 }
 
-// 管理者のメールアドレスリスト
-const ADMIN_EMAILS = [
-  'yamane@potentialight.com' // あなたのメールアドレス
-];
+const ADMIN_EMAILS = ['yamane@potentialight.com'];
 
 export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [currentAdmin, setCurrentAdmin] = useState<User | null>(null);
@@ -40,27 +33,71 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   async function adminLogin(email: string, password: string) {
-    // 管理者メールアドレスかチェック
     if (!ADMIN_EMAILS.includes(email)) {
       throw new Error('管理者アカウントではありません');
     }
-    
-    return signInWithEmailAndPassword(auth, email, password);
+
+    try {
+      const result = await signInWithEmailAndPassword(auth, email, password);
+      
+      // 管理者ログインの監査ログを記録
+      await auditLogPresets.userLogin(
+        result.user.uid,
+        result.user.email || email,
+        true,
+        undefined,
+        navigator.userAgent
+      );
+      
+      return result;
+    } catch (error) {
+      // 管理者ログイン失敗の監査ログを記録
+      await auditLogPresets.userLogin(
+        'unknown',
+        email,
+        false,
+        undefined,
+        navigator.userAgent
+      );
+      
+      throw error;
+    }
   }
 
-  function adminLogout() {
-    return signOut(auth);
+  async function adminLogout() {
+    try {
+      if (currentAdmin) {
+        // 管理者ログアウトの監査ログを記録
+        await auditLogPresets.userLogout(
+          currentAdmin.uid,
+          currentAdmin.email || 'unknown',
+          undefined
+        );
+      }
+      
+      return signOut(auth);
+    } catch (error) {
+      console.error('管理者ログアウトエラー:', error);
+      throw error;
+    }
   }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && ADMIN_EMAILS.includes(user.email || '')) {
-        setCurrentAdmin(user);
-        setIsAdmin(true);
+      setCurrentAdmin(user);
+      
+      if (user && user.email) {
+        const adminStatus = ADMIN_EMAILS.includes(user.email);
+        setIsAdmin(adminStatus);
+        
+        // 管理者でない場合は一般ユーザーとして扱う
+        if (!adminStatus) {
+          setCurrentAdmin(null);
+        }
       } else {
-        setCurrentAdmin(null);
         setIsAdmin(false);
       }
+      
       setLoading(false);
     });
 
