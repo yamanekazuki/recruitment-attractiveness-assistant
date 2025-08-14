@@ -16,7 +16,7 @@ import {
   CheckIcon, 
   XMarkIcon,
   ChevronDownIcon
-} from '../../components/Icons';
+} from '../components/Icons';
 
 const UserProfile: React.FC = () => {
   const { currentUser } = useAuth();

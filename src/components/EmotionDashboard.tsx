@@ -15,7 +15,7 @@ import {
   TrendingUpIcon,
   LightBulbIcon,
   ExclamationTriangleIcon
-} from '../../components/Icons';
+} from '../components/Icons';
 
 interface EmotionDashboardProps {
   points: AttractivenessPoint[];
