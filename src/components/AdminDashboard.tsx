@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon, ChatBubbleLeftRightIcon } from '../../components/Icons';
+import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon, ChatBubbleLeftRightIcon } from './Icons';
 import { auditLogPresets, getAuditLogs, getAuditStats, checkSecurityAlerts, exportAuditLogs } from '../services/auditService';
 import type { AuditLog, AuditLogFilter, AuditStats } from '../types/audit';
 import ChatManagement from './ChatManagement';
