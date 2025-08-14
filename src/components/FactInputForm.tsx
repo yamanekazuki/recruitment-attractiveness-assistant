@@ -6,7 +6,7 @@ interface FactInputFormProps {
   isLoading: boolean;
 }
 
-export const FactInputForm: React.FC<FactInputFormProps> = ({ onSubmit }) => {
+export const FactInputForm: React.FC<FactInputFormProps> = ({ onSubmit, isLoading }) => {
   const [fact, setFact] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,9 +34,12 @@ export const FactInputForm: React.FC<FactInputFormProps> = ({ onSubmit }) => {
       </div>
       <button
         type="submit"
-        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+        disabled={isLoading}
+        className={`w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+          isLoading ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        魅力ポイントを生成
+        {isLoading ? '生成中...' : '魅力ポイントを生成'}
       </button>
     </form>
   );

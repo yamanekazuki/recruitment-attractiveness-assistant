@@ -5,13 +5,13 @@ import LoginPage from './src/components/LoginPage';
 import AdminDashboard from './src/components/AdminDashboard';
 import ThemeSettings from './src/components/ThemeSettings';
 import UserAnalytics from './src/components/UserAnalytics';
-import { FactInputForm } from './components/FactInputForm';
-import { AttractivenessDisplay } from './components/AttractivenessDisplay';
-import { LoadingSpinner } from './components/LoadingSpinner';
-import { ErrorMessage } from './components/ErrorMessage';
+import { FactInputForm } from './src/components/FactInputForm';
+import { AttractivenessDisplay } from './src/components/AttractivenessDisplay';
+import { LoadingSpinner } from './src/components/LoadingSpinner';
+import { ErrorMessage } from './src/components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
-import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon, ChartBarIcon } from './components/Icons';
+import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon, ChartBarIcon } from './src/components/Icons';
 import { loadUserPreferences, applyTheme, loadGlobalTheme } from './src/services/themeService';
 import { saveAnalysisHistory } from './src/services/historyService';
 
@@ -28,22 +28,30 @@ const App: React.FC = () => {
   // テーマ設定の初期化
   useEffect(() => {
     // 背景色を強制的に白に設定
-    document.body.style.backgroundColor = '#ffffff';
-    const rootElement = document.getElementById('root');
-    if (rootElement) {
-      rootElement.style.backgroundColor = '#ffffff';
-    }
-    
-    if (currentUser) {
-      const userPrefs = loadUserPreferences(currentUser.uid);
-      if (userPrefs) {
-        applyTheme(userPrefs.theme);
+    const setWhiteBackground = () => {
+      document.body.style.backgroundColor = '#ffffff';
+      const rootElement = document.getElementById('root');
+      if (rootElement) {
+        rootElement.style.backgroundColor = '#ffffff';
       }
-    } else {
-      // ユーザーがログインしていない場合でもグローバルテーマを適用
-      const globalTheme = loadGlobalTheme();
-      applyTheme(globalTheme);
-    }
+    };
+
+    // テーマを適用
+    const applyUserTheme = () => {
+      if (currentUser) {
+        const userPrefs = loadUserPreferences(currentUser.uid);
+        if (userPrefs) {
+          applyTheme(userPrefs.theme);
+        }
+      } else {
+        // ユーザーがログインしていない場合でもグローバルテーマを適用
+        const globalTheme = loadGlobalTheme();
+        applyTheme(globalTheme);
+      }
+    };
+
+    setWhiteBackground();
+    applyUserTheme();
   }, [currentUser]);
 
   // テーマ設定の変更を監視
@@ -65,17 +73,22 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // yamane@potentialight.comでログインした場合の初期設定
+  /**
+   * yamane@potentialight.comでログインした場合の初期設定
+   * 管理者としてログインしている場合は管理者モードを有効にする
+   */
   useEffect(() => {
     if (currentUser && currentUser.email === 'yamane@potentialight.com') {
-      // 管理者としてログインしている場合は管理者モードを有効にする
       if (isAdmin) {
         setIsAdminMode(true);
       }
     }
   }, [currentUser, isAdmin]);
 
-  // AdminDashboardからのメッセージを受信
+  /**
+   * AdminDashboardからのメッセージを受信
+   * ユーザーモードへの切り替えとメイン画面への移動を処理
+   */
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'SWITCH_TO_USER_MODE') {
@@ -132,7 +145,7 @@ const App: React.FC = () => {
       console.log('AI分析完了:', result);
       
       if (result && result.points && result.points.length > 0) {
-        setAttractiveness(result);
+      setAttractiveness(result);
         setError(null);
         
         // 分析履歴を保存
@@ -238,7 +251,7 @@ const App: React.FC = () => {
   // General user routing logic
   if (currentUser && !isAdmin) {
     if (activeView === 'theme') {
-      return (
+  return (
         <div className="min-h-screen bg-white">
           {/* ヘッダー */}
           <header className="bg-white shadow-lg border-b border-gray-200">
@@ -247,8 +260,8 @@ const App: React.FC = () => {
                 <div className="flex items-center">
                   <ZapIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
                   <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    採用魅力発見アシスタント
-                  </h1>
+            採用魅力発見アシスタント
+          </h1>
                 </div>
                 <div className="flex items-center space-x-4">
                   <button
@@ -305,7 +318,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             </div>
-          </header>
+      </header>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
               <Cog6ToothIcon className="w-16 h-16 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
@@ -417,13 +430,13 @@ const App: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">採用魅力発見アシスタントへようこそ！</h2>
             <p className="text-lg text-gray-600">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
           </div>
-          <FactInputForm onSubmit={handleSubmit} />
+          <FactInputForm onSubmit={handleSubmit} isLoading={isLoading} />
           {isLoading && <LoadingSpinner />}
           {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
           {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
-        </main>
-      </div>
-    );
+      </main>
+    </div>
+  );
   }
   
   return <LoginPage />;

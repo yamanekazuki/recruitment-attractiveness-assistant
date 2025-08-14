@@ -3,7 +3,7 @@ import type { AttractivenessOutput, AttractivenessPoint } from '../types';
 import { BrainIcon, HeartIcon, LightbulbIcon, ClipboardCopyIcon, CheckIcon, ZapIcon } from './Icons';
 
 interface AttractivenessDisplayProps {
-  data: AttractivenessOutput;
+  attractiveness: AttractivenessOutput;
 }
 
 const PointCard: React.FC<{ point: AttractivenessPoint; index: number }> = ({ point }) => {

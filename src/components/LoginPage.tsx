@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ZapIcon } from '../../components/Icons';
+import { ZapIcon } from './Icons';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
