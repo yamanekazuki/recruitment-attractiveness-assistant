@@ -25,7 +25,7 @@ import {
   FireIcon,
   TrophyIcon,
   ArrowTrendingUpIcon
-} from './Icons';
+} from '../../components/Icons';
 
 const UserAnalytics: React.FC = () => {
   const { currentUser } = useAuth();

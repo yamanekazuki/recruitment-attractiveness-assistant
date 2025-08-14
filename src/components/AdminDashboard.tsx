@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon } from './Icons';
+import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon } from '../../components/Icons';
 import { auditLogPresets, getAuditLogs, getAuditStats, checkSecurityAlerts, exportAuditLogs } from '../services/auditService';
 import type { AuditLog, AuditLogFilter, AuditStats } from '../types/audit';
 
@@ -128,8 +128,14 @@ const AdminDashboard: React.FC = () => {
   // ユーザー画面に移動する関数
   const handleSwitchToUserMode = () => {
     // 管理画面からユーザー画面に切り替える
-    // App.tsxの状態を更新する
-    window.postMessage({ type: 'SWITCH_TO_USER_MODE' }, '*');
+    // 親コンポーネント（App.tsx）の状態を更新する
+    if (window.parent && window.parent !== window) {
+      // 親ウィンドウが存在する場合
+      window.parent.postMessage({ type: 'SWITCH_TO_USER_MODE' }, '*');
+    } else {
+      // 直接ページをリロードしてユーザーモードに戻る
+      window.location.reload();
+    }
   };
 
   // 監査ログのエクスポート

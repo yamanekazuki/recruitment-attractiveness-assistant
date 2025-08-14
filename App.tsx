@@ -5,15 +5,28 @@ import LoginPage from './src/components/LoginPage';
 import AdminDashboard from './src/components/AdminDashboard';
 import ThemeSettings from './src/components/ThemeSettings';
 import UserAnalytics from './src/components/UserAnalytics';
-import { FactInputForm } from './src/components/FactInputForm';
-import { AttractivenessDisplay } from './src/components/AttractivenessDisplay';
-import { LoadingSpinner } from './src/components/LoadingSpinner';
-import { ErrorMessage } from './src/components/ErrorMessage';
+import UserProfile from './src/components/UserProfile';
+import EmotionDashboard from './src/components/EmotionDashboard';
+import { FactInputForm } from './components/FactInputForm';
+import { AttractivenessDisplay } from './components/AttractivenessDisplay';
+import { LoadingSpinner } from './components/LoadingSpinner';
+import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
-import { InfoIcon, ZapIcon, LogOutIcon, PaletteIcon, Cog6ToothIcon, ChartBarIcon } from './src/components/Icons';
+import { 
+  InfoIcon, 
+  ZapIcon, 
+  LogOutIcon, 
+  PaletteIcon, 
+  Cog6ToothIcon, 
+  ChartBarIcon,
+  UserCircleIcon,
+  FaceSmileIcon,
+  ChevronDownIcon
+} from './src/components/Icons';
 import { loadUserPreferences, applyTheme, loadGlobalTheme } from './src/services/themeService';
 import { saveAnalysisHistory } from './src/services/historyService';
+import { getUserProfile } from './src/services/profileService';
 
 const App: React.FC = () => {
   const { currentUser, isAdmin, logout } = useAuth();
@@ -21,37 +34,30 @@ const App: React.FC = () => {
   const [attractiveness, setAttractiveness] = useState<AttractivenessOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings' | 'analytics'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'theme' | 'settings' | 'analytics' | 'profile' | 'emotion'>('main');
   const [analysisStartTime, setAnalysisStartTime] = useState<number | null>(null);
   const [isAdminMode, setIsAdminMode] = useState(false); // 管理者モードの状態を追加
+  const [userProfile, setUserProfile] = useState<any>(null); // ユーザープロフィールの状態
 
   // テーマ設定の初期化
   useEffect(() => {
     // 背景色を強制的に白に設定
-    const setWhiteBackground = () => {
-      document.body.style.backgroundColor = '#ffffff';
-      const rootElement = document.getElementById('root');
-      if (rootElement) {
-        rootElement.style.backgroundColor = '#ffffff';
+    document.body.style.backgroundColor = '#ffffff';
+    const rootElement = document.getElementById('root');
+    if (rootElement) {
+      rootElement.style.backgroundColor = '#ffffff';
+    }
+    
+    if (currentUser) {
+      const userPrefs = loadUserPreferences(currentUser.uid);
+      if (userPrefs) {
+        applyTheme(userPrefs.theme);
       }
-    };
-
-    // テーマを適用
-    const applyUserTheme = () => {
-      if (currentUser) {
-        const userPrefs = loadUserPreferences(currentUser.uid);
-        if (userPrefs) {
-          applyTheme(userPrefs.theme);
-        }
-      } else {
-        // ユーザーがログインしていない場合でもグローバルテーマを適用
-        const globalTheme = loadGlobalTheme();
-        applyTheme(globalTheme);
-      }
-    };
-
-    setWhiteBackground();
-    applyUserTheme();
+    } else {
+      // ユーザーがログインしていない場合でもグローバルテーマを適用
+      const globalTheme = loadGlobalTheme();
+      applyTheme(globalTheme);
+    }
   }, [currentUser]);
 
   // テーマ設定の変更を監視
@@ -73,22 +79,25 @@ const App: React.FC = () => {
     };
   }, []);
 
-  /**
-   * yamane@potentialight.comでログインした場合の初期設定
-   * 管理者としてログインしている場合は管理者モードを有効にする
-   */
+  // yamane@potentialight.comでログインした場合の初期設定
   useEffect(() => {
     if (currentUser && currentUser.email === 'yamane@potentialight.com') {
+      // 管理者としてログインしている場合は管理者モードを有効にする
       if (isAdmin) {
         setIsAdminMode(true);
       }
     }
   }, [currentUser, isAdmin]);
 
-  /**
-   * AdminDashboardからのメッセージを受信
-   * ユーザーモードへの切り替えとメイン画面への移動を処理
-   */
+  // ユーザープロフィールの読み込み
+  useEffect(() => {
+    if (currentUser) {
+      const profile = getUserProfile(currentUser.uid);
+      setUserProfile(profile);
+    }
+  }, [currentUser]);
+
+  // AdminDashboardからのメッセージを受信
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'SWITCH_TO_USER_MODE') {
@@ -152,6 +161,16 @@ const App: React.FC = () => {
         if (currentUser && analysisStartTime) {
           const sessionDuration = Math.round((Date.now() - analysisStartTime) / 1000);
           await saveAnalysisHistory(currentUser.uid, fact, result, sessionDuration);
+          
+          // 感情分析の結果も保存
+          try {
+            const { generateEmotionAnalysis } = await import('./src/services/emotionService');
+            const emotionAnalysis = generateEmotionAnalysis(result.points, `analysis-${Date.now()}`);
+            // 感情分析結果をlocalStorageに保存（必要に応じて）
+            localStorage.setItem(`emotion-${currentUser.uid}-${Date.now()}`, JSON.stringify(emotionAnalysis));
+          } catch (error) {
+            console.warn('感情分析の保存に失敗:', error);
+          }
         }
       } else {
         setError('AI分析の結果が正しく取得できませんでした');
@@ -230,10 +249,15 @@ const App: React.FC = () => {
     };
   }, [isLoading]);
 
-  // 管理者専用ルーティング（yamane@potentialight.comのみ）
-  if (currentUser && currentUser.email === 'yamane@potentialight.com' && isAdmin) {
+  // Admin routing logic
+  if (isAdmin && currentAdmin) {
+    return <AdminDashboard />;
+  }
+  
+  // yamane@potentialight.comでログインした場合の特別な処理
+  if (currentUser && currentUser.email === 'yamane@potentialight.com') {
     // 管理者としてログインしている場合は管理者モードを有効にする
-    if (!isAdminMode) {
+    if (isAdmin && !isAdminMode) {
       setIsAdminMode(true);
     }
     
@@ -365,6 +389,85 @@ const App: React.FC = () => {
       );
     }
 
+    if (activeView === 'profile') {
+      return (
+        <div className="min-h-screen bg-white">
+          {/* ヘッダー */}
+          <header className="bg-white shadow-lg border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-6">
+                <div className="flex items-center">
+                  <ZapIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    採用魅力発見アシスタント
+                  </h1>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setActiveView('main')}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <InfoIcon className="w-4 h-4 mr-2" />
+                    メイン画面
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <LogOutIcon className="w-4 h-4 mr-2" />
+                    ログアウト
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+          <UserProfile />
+        </div>
+      );
+    }
+
+    if (activeView === 'emotion') {
+      return (
+        <div className="min-h-screen bg-white">
+          {/* ヘッダー */}
+          <header className="bg-white shadow-lg border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-6">
+                <div className="flex items-center">
+                  <ZapIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    採用魅力発見アシスタント
+                  </h1>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setActiveView('main')}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <InfoIcon className="w-4 h-4 mr-2" />
+                    メイン画面
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  >
+                    <LogOutIcon className="w-4 h-4 mr-2" />
+                    ログアウト
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+          {attractiveness && (
+            <EmotionDashboard 
+              points={attractiveness.points} 
+              analysisId={`analysis-${Date.now()}`} 
+            />
+          )}
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-white">
         {/* ヘッダー */}
@@ -396,19 +499,33 @@ const App: React.FC = () => {
                   テーマ設定
                 </button>
                 <button
-                  onClick={() => setActiveView('settings')}
-                  className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                >
-                  <Cog6ToothIcon className="w-4 h-4 mr-2" />
-                  設定
-                </button>
-                <button
                   onClick={() => setActiveView('analytics')}
                   className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <ChartBarIcon className="w-4 h-4 mr-2" />
                   分析履歴
                 </button>
+                
+                {/* ユーザープロフィールアイコン */}
+                <div className="relative">
+                  <button
+                    onClick={() => setActiveView('profile')}
+                    className="flex items-center space-x-2 p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    {userProfile?.avatar ? (
+                      <img 
+                        src={userProfile.avatar} 
+                        alt="プロフィール" 
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <UserCircleIcon className="w-8 h-8 text-gray-400" />
+                    )}
+                    <span className="text-sm font-medium">{userProfile?.displayName || currentUser?.email?.split('@')[0]}</span>
+                    <ChevronDownIcon className="w-4 h-4" />
+                  </button>
+                </div>
+
                 <button
                   onClick={handleLogout}
                   className="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
@@ -425,10 +542,23 @@ const App: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-4">採用魅力発見アシスタントへようこそ！</h2>
             <p className="text-lg text-gray-600">あなたの企業の魅力をAIが分析し、採用活動に活用できるポイントをお伝えします</p>
           </div>
-          <FactInputForm onSubmit={handleSubmit} isLoading={isLoading} />
+          <FactInputForm onSubmit={handleSubmit} />
           {isLoading && <LoadingSpinner />}
           {error && <ErrorMessage message={error} onReset={handleErrorReset} />}
-          {attractiveness && <AttractivenessDisplay attractiveness={attractiveness} />}
+          {attractiveness && (
+            <>
+              <AttractivenessDisplay attractiveness={attractiveness} />
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setActiveView('emotion')}
+                  className="flex items-center mx-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <FaceSmileIcon className="w-5 h-5 mr-2" />
+                  感情分析ダッシュボードを見る
+                </button>
+              </div>
+            </>
+          )}
       </main>
     </div>
   );

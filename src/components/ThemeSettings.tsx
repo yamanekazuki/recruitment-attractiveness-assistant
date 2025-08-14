@@ -26,7 +26,7 @@ import {
   DownloadIcon,
   UploadIcon,
   PaintBrushIcon
-} from './Icons';
+} from '../../components/Icons';
 
 const ThemeSettings: React.FC = () => {
   const { currentUser } = useAuth();

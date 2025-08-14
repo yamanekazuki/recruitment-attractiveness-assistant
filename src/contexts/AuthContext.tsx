@@ -5,7 +5,6 @@ import { auditLogPresets } from '../services/auditService';
 
 interface AuthContextType {
   currentUser: User | null;
-  isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
@@ -119,12 +118,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return unsubscribe;
   }, []);
 
-  // 管理者判定（yamane@potentialight.comのみ）
-  const isAdmin = currentUser?.email === 'yamane@potentialight.com';
-
   const value = {
     currentUser,
-    isAdmin,
     login,
     signup,
     loginWithGoogle,
