@@ -13,6 +13,7 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
 import { generateAttractivenessPoints } from './services/geminiService';
 import type { AttractivenessOutput } from './types';
+import ChatWidget from './src/components/ChatWidget';
 import { 
   InfoIcon, 
   ZapIcon, 
@@ -302,6 +303,7 @@ const App: React.FC = () => {
             </div>
           </header>
           <ThemeSettings />
+          <ChatWidget />
         </div>
       );
     }
@@ -348,6 +350,7 @@ const App: React.FC = () => {
               </button>
             </div>
           </div>
+          <ChatWidget />
         </div>
       );
     }
@@ -385,6 +388,7 @@ const App: React.FC = () => {
             </div>
           </header>
           <UserAnalytics />
+          <ChatWidget />
         </div>
       );
     }
@@ -422,6 +426,7 @@ const App: React.FC = () => {
             </div>
           </header>
           <UserProfile />
+          <ChatWidget />
         </div>
       );
     }
@@ -464,6 +469,7 @@ const App: React.FC = () => {
               analysisId={`analysis-${Date.now()}`} 
             />
           )}
+          <ChatWidget />
         </div>
       );
     }
@@ -558,10 +564,13 @@ const App: React.FC = () => {
                 </button>
               </div>
             </>
-          )}
-      </main>
-    </div>
-  );
+                    )}
+        </main>
+        
+        {/* チャットウィジェット */}
+        <ChatWidget />
+      </div>
+    );
   }
   
   return <LoginPage />;

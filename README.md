@@ -24,6 +24,11 @@ REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
 REACT_APP_GEMINI_API_KEY=your_gemini_api_key
 ```
 
+#### Slack Webhook設定（チャット機能用）
+```bash
+VITE_SLACK_WEBHOOK_URL=your_slack_webhook_url
+```
+
 ### Firebase設定の確認
 
 Googleログインが動作しない場合は、以下を確認してください：
@@ -47,4 +52,5 @@ npm run dev
 - ユーザー認証（Googleログイン、メール/パスワード）
 - テーマカスタマイズ
 - 分析履歴の管理
-- 管理者機能（ユーザー管理、監査ログ）
+- リアルタイムチャット機能（Slack連携）
+- 管理者機能（ユーザー管理、監査ログ、チャット管理）

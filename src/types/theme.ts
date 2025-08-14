@@ -114,34 +114,3 @@ export interface ProfileUpdateData {
   company?: string;
   position?: string;
 }
-
-// 感情分析の型定義
-export interface EmotionScore {
-  positive: number;    // ポジティブ度 (0-100)
-  negative: number;    // ネガティブ度 (0-100)
-  neutral: number;     // ニュートラル度 (0-100)
-  confidence: number;  // 信頼度 (0-100)
-  dominant: 'positive' | 'negative' | 'neutral'; // 支配的な感情
-}
-
-export interface EmotionAnalysis {
-  overall: EmotionScore;
-  byCategory: {
-    [category: string]: EmotionScore;
-  };
-  suggestions: string[];
-  trends: EmotionTrend[];
-}
-
-export interface EmotionTrend {
-  date: Date;
-  score: EmotionScore;
-  analysisId: string;
-}
-
-export interface EmotionInsight {
-  type: 'improvement' | 'highlight' | 'warning';
-  message: string;
-  confidence: number;
-  category?: string;
-}

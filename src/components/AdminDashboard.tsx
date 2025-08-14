@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../contexts/AdminAuthContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon } from '../../components/Icons';
+import { ZapIcon, UserPlusIcon, UsersIcon, LogOutIcon, EyeIcon, DownloadIcon, ChartBarIcon, ExclamationTriangleIcon, UserIcon, ChatBubbleLeftRightIcon } from '../../components/Icons';
 import { auditLogPresets, getAuditLogs, getAuditStats, checkSecurityAlerts, exportAuditLogs } from '../services/auditService';
 import type { AuditLog, AuditLogFilter, AuditStats } from '../types/audit';
+import ChatManagement from './ChatManagement';
 
 const AdminDashboard: React.FC = () => {
   const { adminLogout } = useAdminAuth();
@@ -15,7 +16,7 @@ const AdminDashboard: React.FC = () => {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
   
   // 監査ログ関連の状態
-  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'analytics'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'audit' | 'analytics' | 'chat'>('users');
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [auditStats, setAuditStats] = useState<AuditStats | null>(null);
   const [securityAlerts, setSecurityAlerts] = useState<AuditLog[]>([]);
@@ -247,6 +248,17 @@ const AdminDashboard: React.FC = () => {
             >
               <ChartBarIcon className="w-5 h-5 inline mr-2" />
               分析・統計
+            </button>
+            <button
+              onClick={() => setActiveTab('chat')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'chat'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <ChatBubbleLeftRightIcon className="w-5 h-5 inline mr-2" />
+              チャット管理
             </button>
           </nav>
         </div>
@@ -601,6 +613,13 @@ const AdminDashboard: React.FC = () => {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* チャット管理タブ */}
+        {activeTab === 'chat' && (
+          <div className="space-y-6">
+            <ChatManagement />
           </div>
         )}
       </main>

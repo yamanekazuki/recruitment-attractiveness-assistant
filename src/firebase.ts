@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
 
 // 環境変数からFirebase設定を取得
 const firebaseConfig = {
@@ -23,6 +24,9 @@ const app = initializeApp(firebaseConfig);
 
 // Authインスタンスの取得
 export const auth = getAuth(app);
+
+// Realtime Databaseインスタンスの取得
+export const database = getDatabase(app);
 
 // Google認証プロバイダーの設定
 export const googleProvider = new GoogleAuthProvider();
