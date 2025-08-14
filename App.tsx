@@ -230,15 +230,10 @@ const App: React.FC = () => {
     };
   }, [isLoading]);
 
-  // Admin routing logic
-  if (isAdmin && currentAdmin) {
-    return <AdminDashboard />;
-  }
-  
-  // yamane@potentialight.comでログインした場合の特別な処理
-  if (currentUser && currentUser.email === 'yamane@potentialight.com') {
+  // 管理者専用ルーティング（yamane@potentialight.comのみ）
+  if (currentUser && currentUser.email === 'yamane@potentialight.com' && isAdmin) {
     // 管理者としてログインしている場合は管理者モードを有効にする
-    if (isAdmin && !isAdminMode) {
+    if (!isAdminMode) {
       setIsAdminMode(true);
     }
     
